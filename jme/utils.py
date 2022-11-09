@@ -3,9 +3,6 @@ import random
 import numpy as np
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
-import datetime
-import requests
 from typing import Optional, Callable
 
 from .metrics import calc_metrics
@@ -31,32 +28,13 @@ class EarlyStopping:
         return should_save, should_stop
 
 
-# ref. https://qiita.com/kaggle_master-arai-san/items/d59b2fb7142ec7e270a5#seed_everything
 def seed_everything(seed=1234):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
-    # tf.random.set_seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
-
-
-def send_notification(start_ts, end_ts, epoch, args):
-    arg_list = []
-    for key, value in vars(args).items():
-        arg_list.append({'key': key, 'value': value})
-    headers = {'Content-Type': 'application/json'}
-    json = {
-        'name': 'KGMB',
-        'start': datetime.datetime.fromtimestamp(start_ts).strftime('%Y-%m-%d %H:%M:%S'),
-        'end': datetime.datetime.fromtimestamp(end_ts).strftime('%Y-%m-%d %H:%M:%S'),
-        'duration': end_ts - start_ts,
-        'epoch': epoch,
-        'args': arg_list
-    }
-    url = os.environ.get('GAS_URL')
-    _ = requests.post(url, headers=headers, json=json)
 
 
 def evaluate(dataloader, model, Ks, device):
@@ -80,7 +58,6 @@ def distance(triplets):
     relations = triplets[:, 1, :]
     tails = triplets[:, 2, :]
     return (heads + relations - tails).norm(dim=1)
-    # return 1.0 - F.cosine_similarity(heads + relations, tails)
 
 
 class MyTripletMarginWithDistanceLoss(nn.Module):
@@ -110,25 +87,6 @@ def triplet_margin_with_distance_loss(
     swap: bool = False,
     reduction: str = "mean"
 ) -> Tensor:
-    # if torch.jit.is_scripting():
-    #     raise NotImplementedError(
-    #         "F.triplet_margin_with_distance_loss does not support JIT scripting: "
-    #         "functions requiring Callables cannot be scripted."
-    #     )
-
-    # if has_torch_function_variadic(anchor, positive, negative):
-    #     return handle_torch_function(
-    #         triplet_margin_with_distance_loss,
-    #         (anchor, positive, negative),
-    #         anchor,
-    #         positive,
-    #         negative,
-    #         distance_function=distance_function,
-    #         margin=margin,
-    #         swap=swap,
-    #         reduction=reduction,
-    #     )
-
     positive_dist = distance_function(anchor, positive)
     negative_dist = distance_function(anchor, negative)
 

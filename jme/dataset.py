@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from enum import Enum
 import random
 from collections import defaultdict
@@ -36,9 +36,6 @@ class RecDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        # interactionsはtuple
-        # e.g. uのiに対するview, appのinteractionがある場合
-        # interactions = (1, 0, 1)
         u, i, interactions = self.data[idx]
         observed = self._observed_items(u)
         j = self._negative_sampling(observed)
@@ -88,8 +85,6 @@ class KGDataset(Dataset):
     def __getitem__(self, idx):
         positive_triples = self.data[idx]
         h, r, t = positive_triples
-        # ref. https://github.com/mklimasz/TransE-PyTorch/blob/master/main.py#L141
-        # NOTE: この方法だと正解データもnegative samplingしてしまう可能性がある
         head_or_tail = random.randint(0, 1)
         neg_h = h if head_or_tail == 0 else random.randint(0, self.entity_size - 1)
         neg_t = t if head_or_tail == 1 else random.randint(0, self.entity_size - 1)
@@ -103,9 +98,8 @@ class Phase(str, Enum):
 
 
 class ValOrTestDataset(Dataset):
-    def __init__(self, data_path: str, phase: Phase, train_data: list, neg_sample: bool):
+    def __init__(self, data_path: str, phase: Phase, train_data: list):
         self.phase = phase
-        self.neg_sample = neg_sample
         self.user_size, self.item_size = calc_max_ids(data_path)
         self.users = defaultdict(set)
         self.data = []
@@ -139,7 +133,7 @@ class ValOrTestDataset(Dataset):
         observed_item_ids = set(self.users[user_id])
         all_item_ids = set([x for x in range(self.item_size)])
         candidate_neg_items = all_item_ids - observed_item_ids - set([item_id])
-        negative_item_ids = random.sample(list(candidate_neg_items), 99) if self.neg_sample else list(candidate_neg_items)
+        negative_item_ids = random.sample(list(candidate_neg_items), 99)
         dummy_ids = [0] * (self.item_size - len(negative_item_ids) - 1)
         negative_item_ids = dummy_ids + negative_item_ids
         return user_id, item_id, torch.tensor(negative_item_ids), len(dummy_ids)

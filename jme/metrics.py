@@ -8,7 +8,6 @@ def calc_metrics(preds, Ks):
         _, indices = torch.sort(pred, descending=True)
         rank = indices.argmin() + 1
         ranks.append(rank.item())
-    # print(ranks)
     return mrr(ranks), hit_ratios(ranks, Ks), ndcgs(ranks, Ks)
 
 

@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     torch.backends.cudnn.benchmark = True
 
-    data_path = f"{args.data_path}/{args.dataset}"
+    data_path = f"dataset/{args.dataset}"
     behavior_data = eval(args.behavior_data)
     num_workers = 2 if os.cpu_count() > 1 else 0
 
@@ -68,8 +68,7 @@ if __name__ == '__main__':
     train_kg_data = KGDataset(data_path=data_path, neg_size=args.neg_size)
     train_kg_dataloader = DataLoader(train_kg_data, batch_size=args.batch_size, num_workers=num_workers, shuffle=True)
 
-    neg_sample = args.neg_sample == 1
-    val_data = ValOrTestDataset(data_path, phase=Phase.VAL, train_data=behavior_data, neg_sample=neg_sample)
+    val_data = ValOrTestDataset(data_path, phase=Phase.VAL, train_data=behavior_data)
     val_dataloader = DataLoader(val_data, batch_size=args.batch_size)
 
     user_entity_map = torch.tensor(train_kg_data.user_entity_map).to(device)
@@ -84,10 +83,9 @@ if __name__ == '__main__':
         dim=args.dim,
         user_entity_map=user_entity_map,
         item_entity_map=item_entity_map,
-        use_behavior_combination=args.use_behavior_combination,
-        use_behavior_aware_margin=args.use_behavior_aware_margin,
+        use_boac=args.use_boac,
+        use_bam=args.use_bam,
         use_epl=args.use_epl,
-        norm_weight=args.norm_weight,
         device=device
     )
     model = model.to(device)

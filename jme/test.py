@@ -23,14 +23,10 @@ if __name__ == '__main__':
     args = parse_args()
     seed_everything(args.seed)
 
-    data_path = f'{args.data_path}/{args.dataset}'
+    data_path = f'dataset/{args.dataset}'
     all_behavior_data = ['train_view.txt', 'train_fav.txt', 'train.txt']
-    # GHCFとの比較の場合
-    # all_behavior_data = ['train.txt']
 
-    phase = Phase.VAL if args.val == 1 else Phase.TEST
-    neg_sample = args.neg_sample == 1
-    test_data = ValOrTestDataset(data_path, phase=phase, train_data=all_behavior_data, neg_sample=neg_sample)
+    test_data = ValOrTestDataset(data_path, phase=Phase.TEST, train_data=all_behavior_data)
     test_dataloader = DataLoader(test_data, batch_size=args.batch_size)
 
     model = torch.load(args.model_path)

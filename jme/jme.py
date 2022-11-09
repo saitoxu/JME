@@ -17,22 +17,20 @@ KGEModel = ComplEx
 class JME(nn.Module):
     def __init__(self, entity_size: int, relation_size: int, user_size: int, item_size: int, \
             behavior_size: int, dim: int, user_entity_map: torch.tensor, item_entity_map: torch.tensor, \
-            use_behavior_combination: int, use_behavior_aware_margin: int, use_epl: int, \
-            norm_weight: float, device: str):
+            use_boac: int, use_bam: int, use_epl: int, device: str):
         super(JME, self).__init__()
         self.use_epl = use_epl == 1
-        self.use_behavior_aware_margin = use_behavior_aware_margin == 1
-        self.use_behavior_combination = use_behavior_combination == 1
+        self.use_bam = use_bam == 1
+        self.use_boac = use_boac == 1
         self.user_size = user_size
         self.item_size = item_size
         self.behavior_size = behavior_size
-        self.norm_weight = norm_weight
         self.device = device
         self.user_entity_map = user_entity_map
         self.item_entity_map = item_entity_map
 
         mbl_relation_size = behavior_size
-        if self.use_behavior_combination:
+        if self.use_boac:
             mbl_relation_size = 2**behavior_size - 1
 
         if self.use_epl:
@@ -141,7 +139,7 @@ class JME(nn.Module):
         """
         batch = len(interactions)
         bcs = torch.zeros(batch, dtype=torch.int, device=self.device)
-        if self.use_behavior_combination:
+        if self.use_boac:
             for i in range(self.behavior_size):
                 bcs += interactions[:, i] * 2**i
             bcs -= 1
@@ -170,7 +168,8 @@ class JME(nn.Module):
 
 
     def _rec_margin(self, mb_b_batch):
-        if self.use_behavior_aware_margin:
+        if self.use_bam:
             norms = self.mbl_module.relations(mb_b_batch).norm(dim=1)
-            return 1.5 - self.sigmoid(self.norm_weight * norms)
+            alpha = 1.5
+            return alpha - self.sigmoid(norms)
         return 1.0
