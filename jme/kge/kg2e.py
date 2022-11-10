@@ -13,46 +13,46 @@ class KG2E(nn.Module):
         self.vmin = vmin
         self.vmax = vmax
 
-        self.entityEmbedding = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
-        self.entityCovar = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
-        self.relationEmbedding = nn.Embedding(num_embeddings=relation_size, embedding_dim=dim)
-        self.relationCovar = nn.Embedding(num_embeddings=relation_size, embedding_dim=dim)
-        nn.init.xavier_normal_(self.entityEmbedding.weight)
-        nn.init.xavier_normal_(self.entityCovar.weight)
-        nn.init.xavier_normal_(self.relationEmbedding.weight)
-        nn.init.xavier_normal_(self.relationCovar.weight)
+        self.entity_emb = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
+        self.entity_covar = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
+        self.relation_emb = nn.Embedding(num_embeddings=relation_size, embedding_dim=dim)
+        self.relation_covar = nn.Embedding(num_embeddings=relation_size, embedding_dim=dim)
+        nn.init.xavier_normal_(self.entity_emb.weight)
+        nn.init.xavier_normal_(self.entity_covar.weight)
+        nn.init.xavier_normal_(self.relation_emb.weight)
+        nn.init.xavier_normal_(self.relation_covar.weight)
 
 
     def kl_score(self, relation_m, relation_v, error_m, error_v):
         eps = 1e-9
-        losep1 = torch.sum(error_v / (relation_v + eps), dim=1)
-        losep2 = torch.sum((relation_m-error_m)**2 / (relation_v + eps), dim=1)
-        KLer = (losep1 + losep2 - self.ke) / 2
+        ep1_er = torch.sum(error_v / (relation_v + eps), dim=1)
+        ep2_er = torch.sum((relation_m-error_m)**2 / (relation_v + eps), dim=1)
+        kl_er = (ep1_er + ep2_er - self.ke) / 2
 
-        losep1 = torch.sum(relation_v / (error_v + eps), dim=1)
-        losep2 = torch.sum((error_m - relation_m) ** 2 / (error_v + eps), dim=1)
-        KLre = (losep1 + losep2 - self.ke) / 2
-        return (KLer + KLre) / 2
+        ep1_re = torch.sum(relation_v / (error_v + eps), dim=1)
+        ep2_re = torch.sum((error_m - relation_m) ** 2 / (error_v + eps), dim=1)
+        kl_re = (ep1_re + ep2_re - self.ke) / 2
+        return (kl_er + kl_re) / 2
 
 
-    def score(self, inputTriples):
-        head, relation, tail = torch.chunk(input=inputTriples, chunks=3, dim=1)
-        headm = torch.squeeze(self.entityEmbedding(head), dim=1)
-        headv = torch.squeeze(self.entityCovar(head), dim=1)
-        tailm = torch.squeeze(self.entityEmbedding(tail), dim=1)
-        tailv = torch.squeeze(self.entityCovar(tail), dim=1)
-        relationm = torch.squeeze(self.relationEmbedding(relation), dim=1)
-        relationv = torch.squeeze(self.relationCovar(relation), dim=1)
-        errorm = tailm - headm
-        errorv = tailv + headv
-        return self.kl_score(relationm, relationv, errorm, errorv)
+    def score(self, triples):
+        head, relation, tail = torch.chunk(input=triples, chunks=3, dim=1)
+        head_m = torch.squeeze(self.entity_emb(head), dim=1)
+        head_v = torch.squeeze(self.entity_covar(head), dim=1)
+        tail_m = torch.squeeze(self.entity_emb(tail), dim=1)
+        tail_v = torch.squeeze(self.entity_covar(tail), dim=1)
+        relation_m = torch.squeeze(self.relation_emb(relation), dim=1)
+        relation_v = torch.squeeze(self.relation_covar(relation), dim=1)
+        error_m = tail_m - head_m
+        error_v = tail_v + head_v
+        return self.kl_score(relation_m, relation_v, error_m, error_v)
 
 
     def normalize(self):
-        ee = self.entityEmbedding.weight
-        re = self.relationEmbedding.weight
-        ec = self.entityCovar.weight
-        rc = self.relationCovar.weight
+        ee = self.entity_emb.weight
+        re = self.relation_emb.weight
+        ec = self.entity_covar.weight
+        rc = self.relation_covar.weight
         ee.weight.data.copy_(torch.renorm(input=ee.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
         re.weight.data.copy_(torch.renorm(input=re.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
         ec.weight.data.copy_(torch.renorm(input=ec.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
@@ -67,12 +67,12 @@ class KG2E(nn.Module):
 
 
     def entities(self, e_batch):
-        ee = self.entityEmbedding(e_batch)
-        ec = self.entityCovar(e_batch)
+        ee = self.entity_emb(e_batch)
+        ec = self.entity_covar(e_batch)
         return torch.cat([ee, ec], dim=1)
 
 
     def relations(self, r_batch):
-        re = self.relationEmbedding(r_batch)
-        rc = self.relationCovar(r_batch)
+        re = self.relation_emb(r_batch)
+        rc = self.relation_covar(r_batch)
         return torch.cat([re, rc], dim=1)
