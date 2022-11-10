@@ -6,7 +6,7 @@ from time import time
 from .parser import parse_args
 from .jme import JME
 from .dataset import RecDataset, KGDataset, ValOrTestDataset, Phase
-from .utils import EarlyStopping, seed_everything, evaluate
+from .utils import EarlyStopping, seed_everything, evaluate, log_results
 from .logger import getLogger
 
 
@@ -16,7 +16,6 @@ def train(train_rec_dataloader, train_kg_dataloader, model, optimizer, args, dev
 
     kg_size = len(train_kg_dataloader.dataset)
     size = min(rec_size, kg_size)
-    # TODO: データ少ない方切り捨てちゃってる
     for batch, (rec_data, kg_data) in enumerate(zip(train_rec_dataloader, train_kg_dataloader)):
         u, i, j, interactions = rec_data
         u, i, j, interactions = u.to(device), i.to(device), j.to(device), interactions.to(device)
@@ -36,13 +35,9 @@ def train(train_rec_dataloader, train_kg_dataloader, model, optimizer, args, dev
             logger.debug(f"Loss: {loss:>7f} [{current:>8d}/{size:>8d}]")
 
 
-def test(dataloader, model, Ks, device, logger):
+def validate(dataloader, model, Ks, device, logger):
     mrr, hrs, ndcgs = evaluate(dataloader, model, Ks, device)
-    rounded_hrs = list(map(lambda x: float(f'{x:>7f}'), hrs))
-    rounded_ndcgs = list(map(lambda x: float(f'{x:>7f}'), ndcgs))
-    logger.debug(f'MRR:\t{mrr:>7f}')
-    logger.debug(f'HRs:\t{rounded_hrs}')
-    logger.debug(f'NDCGs:\t{rounded_ndcgs}')
+    log_results(mrr, hrs, ndcgs, logger.debug)
     return hrs[0]
 
 
@@ -94,16 +89,15 @@ if __name__ == '__main__':
     early_stop = EarlyStopping(args.patience)
 
     Ks = eval(args.Ks)
-    # test(val_dataloader, model, Ks, device, logger)
     epoch = args.epoch
-    test_interval = 5
+    eval_interval = 5
     for t in range(args.epoch):
         logger.debug(f"Epoch {t+1}")
         logger.debug('-'*32)
         train(train_rec_dataloader, train_kg_dataloader, model, optimizer, args, device, logger)
         torch.save(model, args.save_path + 'latest.pth')
-        if (t+1) % test_interval == 0:
-            hr = test(val_dataloader, model, Ks, device, logger)
+        if (t+1) % eval_interval == 0:
+            hr = validate(val_dataloader, model, Ks, device, logger)
             # early stopping
             should_save, should_stop = early_stop(hr)
             if should_save:

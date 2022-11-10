@@ -52,6 +52,14 @@ def evaluate(dataloader, model, Ks, device):
     return calc_metrics(preds, Ks)
 
 
+def log_results(mrr, hrs, ndcgs, log=print):
+    rounded_hrs = list(map(lambda x: float(f'{x:>7f}'), hrs))
+    rounded_ndcgs = list(map(lambda x: float(f'{x:>7f}'), ndcgs))
+    log(f'MRR:\t{mrr:>7f}')
+    log(f'HRs:\t{rounded_hrs}')
+    log(f'NDCGs:\t{rounded_ndcgs}')
+
+
 def distance(triplets):
     assert triplets.size()[1] == 3
     heads = triplets[:, 0, :]

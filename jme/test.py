@@ -3,16 +3,12 @@ from torch.utils.data import DataLoader
 
 from .parser import parse_args
 from .dataset import ValOrTestDataset, Phase
-from .utils import seed_everything, evaluate
+from .utils import seed_everything, evaluate, log_results
 
 
 def test(dataloader, model, Ks, device):
     mrr, hrs, ndcgs = evaluate(dataloader, model, Ks, device)
-    rounded_hrs = list(map(lambda x: float(f'{x:>7f}'), hrs))
-    rounded_ndcgs = list(map(lambda x: float(f'{x:>7f}'), ndcgs))
-    print(f'MRR:\t{mrr:>7f}')
-    print(f'HRs:\t{rounded_hrs}')
-    print(f'NDCGs:\t{rounded_ndcgs}')
+    log_results(mrr, hrs, ndcgs)
 
 
 if __name__ == '__main__':
