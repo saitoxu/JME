@@ -133,7 +133,7 @@ class ValOrTestDataset(Dataset):
         observed_item_ids = set(self.users[user_id])
         all_item_ids = set([x for x in range(self.item_size)])
         candidate_neg_items = all_item_ids - observed_item_ids - set([item_id])
-        negative_item_ids = random.sample(list(candidate_neg_items), 99)
+        negative_item_ids = random.sample(list(candidate_neg_items), min(len(candidate_neg_items), 99))
         dummy_ids = [0] * (self.item_size - len(negative_item_ids) - 1)
         negative_item_ids = dummy_ids + negative_item_ids
         return user_id, item_id, torch.tensor(negative_item_ids), len(dummy_ids)
