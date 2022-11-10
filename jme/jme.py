@@ -8,7 +8,6 @@ from .kge.trans_r import TransR
 from .kge.conv_e import ConvE
 from .kge.dist_mult import DistMult
 from .kge.compl_ex import ComplEx
-from .kge.trans_g import TransG
 from .kge.kg2e import KG2E
 from .utils import distance, MyTripletMarginWithDistanceLoss
 

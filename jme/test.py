@@ -3,19 +3,16 @@ from torch.utils.data import DataLoader
 
 from .parser import parse_args
 from .dataset import ValOrTestDataset, Phase
-from .metrics import calc_metrics
 from .utils import seed_everything, evaluate
 
 
 def test(dataloader, model, Ks, device):
     mrr, hrs, ndcgs = evaluate(dataloader, model, Ks, device)
     rounded_hrs = list(map(lambda x: float(f'{x:>7f}'), hrs))
-    # rounded_ndcgs = list(map(lambda x: float(f'{x:>7f}'), ndcgs))
-    # print(f'MRR:\t{mrr:>7f}')
-    # print(f'HRs:\t{rounded_hrs}')
-    # print(f'NDCGs:\t{rounded_ndcgs}')
-    rounded_ndcgs = list(map(lambda x: str(float(f'{x:>7f}')), ndcgs))
-    print(f'{mrr:>7f},{",".join(rounded_ndcgs)}')
+    rounded_ndcgs = list(map(lambda x: float(f'{x:>7f}'), ndcgs))
+    print(f'MRR:\t{mrr:>7f}')
+    print(f'HRs:\t{rounded_hrs}')
+    print(f'NDCGs:\t{rounded_ndcgs}')
 
 
 if __name__ == '__main__':
