@@ -7,6 +7,7 @@ def parse_args():
     parser.add_argument('--dataset', nargs='?', default='toy', help='Choose a dataset from {toy}')
     parser.add_argument('--behavior_data', nargs='?',default='["train_view.txt","train_fav.txt","train.txt"]',
         help='Behavior data paths, the target behavior should be last.')
+    parser.add_argument('--kge', nargs='?', default='trans_e', help='Choose a KGE method from {trans_e,trans_h,trans_r,dist_mult,compl_ex,kg2e,conv_e}')
     parser.add_argument('--epoch', type=int, default=500, help='Number of epoch.')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size.')
     parser.add_argument('--dim', type=int, default=64, help='Embedding size.')
@@ -21,7 +22,7 @@ def parse_args():
 
     args = parser.parse_args()
 
-    save_dir = f'{args.dataset}_dim{args.dim}_lr{args.lr}'
+    save_dir = f'{args.dataset}_dim{args.dim}_lr{args.lr}_{args.kge}'
     save_path = f'trained_model/{save_dir}/'
     args.save_path = save_path
 

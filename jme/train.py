@@ -81,6 +81,7 @@ if __name__ == '__main__':
         use_boac=args.use_boac,
         use_bam=args.use_bam,
         use_epl=args.use_epl,
+        kge=args.kge,
         device=device
     )
     model = model.to(device)

@@ -4,18 +4,17 @@ from torch import nn
 from .kge.trans_e import TransE
 from .kge.trans_h import TransH
 from .kge.trans_r import TransR
-from .kge.conv_e import ConvE
 from .kge.dist_mult import DistMult
 from .kge.compl_ex import ComplEx
 from .kge.kg2e import KG2E
+from .kge.conv_e import ConvE
 from .utils import distance, MyTripletMarginWithDistanceLoss
 
-KGEModel = ComplEx
 
 class JME(nn.Module):
     def __init__(self, entity_size: int, relation_size: int, user_size: int, item_size: int, \
             behavior_size: int, dim: int, user_entity_map: torch.tensor, item_entity_map: torch.tensor, \
-            use_boac: int, use_bam: int, use_epl: int, device: str):
+            use_boac: int, use_bam: int, use_epl: int, kge: str, device: str):
         super(JME, self).__init__()
         self.use_epl = use_epl == 1
         self.use_bam = use_bam == 1
@@ -31,14 +30,15 @@ class JME(nn.Module):
         if self.use_boac:
             mbl_relation_size = 2**behavior_size - 1
 
+        KGE = kge_class(kge)
         if self.use_epl:
-            self.epl_module = KGEModel(
+            self.epl_module = KGE(
                 entity_size=entity_size,
                 relation_size=relation_size,
                 dim=dim,
                 device=device
             )
-        self.mbl_module = KGEModel(
+        self.mbl_module = KGE(
             entity_size=user_size + item_size,
             relation_size=mbl_relation_size,
             dim=dim,
@@ -169,3 +169,21 @@ class JME(nn.Module):
             alpha = 1.5
             return alpha - self.sigmoid(norms)
         return 1.0
+
+
+def kge_class(method_name):
+    assert method_name in ['trans_e', 'trans_h', 'trans_r', 'dist_mult', 'compl_ex', 'kg2e', 'conv_e']
+    if method_name == 'trans_e':
+        return TransE
+    elif method_name == 'trans_h':
+        return TransH
+    elif method_name == 'trans_r':
+        return TransR
+    elif method_name == 'dist_mult':
+        return DistMult
+    elif method_name == 'compl_ex':
+        return ComplEx
+    elif method_name == 'kg2e':
+        return KG2E
+    else:
+        return ConvE
