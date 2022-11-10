@@ -49,10 +49,10 @@ class KG2E(nn.Module):
 
 
     def normalize(self):
-        ee = self.entity_emb.weight
-        re = self.relation_emb.weight
-        ec = self.entity_covar.weight
-        rc = self.relation_covar.weight
+        ee = self.entity_emb
+        re = self.relation_emb
+        ec = self.entity_covar
+        rc = self.relation_covar
         ee.weight.data.copy_(torch.renorm(input=ee.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
         re.weight.data.copy_(torch.renorm(input=re.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
         ec.weight.data.copy_(torch.renorm(input=ec.weight.detach().cpu(), p=2, dim=0, maxnorm=1.0))
