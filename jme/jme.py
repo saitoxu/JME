@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-import torch.nn.functional as F
 
 from .kge.trans_e import TransE
 from .kge.trans_h import TransH
@@ -143,8 +142,6 @@ class JME(nn.Module):
                 bcs += interactions[:, i] * 2**i
             bcs -= 1
         else:
-            # 一番強い選好のinteraction indexを返す
-            # apply > fav > view
             for i in range(self.behavior_size):
                 bcs, _ = torch.max(torch.stack([bcs, interactions[:, i] * i]), dim=0)
         return bcs

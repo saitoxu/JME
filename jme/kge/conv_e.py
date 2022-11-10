@@ -22,7 +22,8 @@ class ConvE(nn.Module):
         self.bn0 = nn.BatchNorm2d(1)
         self.bn1 = nn.BatchNorm2d(32)
         self.bn2 = nn.BatchNorm1d(dim)
-        self.fc = nn.Linear(2688, dim) # TODO: dim = 64でしか動かない
+         # working only under dim = 64
+        self.fc = nn.Linear(2688, dim)
         nn.init.xavier_normal_(self.entities.weight.data)
         nn.init.xavier_normal_(self.relations.weight.data)
 
