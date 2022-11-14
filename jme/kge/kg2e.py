@@ -4,14 +4,11 @@ import torch.nn.functional as F
 
 
 class KG2E(nn.Module):
-    def __init__(self, entity_size: int, relation_size: int, dim: int, device: str, \
-            margin=1.0, vmin=0.03, vmax=3.0):
+    def __init__(self, entity_size: int, relation_size: int, dim: int, device: str, margin=1.0):
         super(KG2E, self).__init__()
         self.device = device
         self.margin = margin
         self.ke = dim
-        self.vmin = vmin
-        self.vmax = vmax
 
         self.entity_emb = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
         self.entity_covar = nn.Embedding(num_embeddings=entity_size, embedding_dim=dim)
