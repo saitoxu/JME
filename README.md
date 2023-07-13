@@ -152,13 +152,16 @@ The format is below.
 ## Citation
 
 If you make use of this code or our algorithm, please cite the following paper.
-After our paper is published officially, we'll replace the following citation as official one.
 
 ```txt
-@inproceedings{saito2022,
-	author={Saito, Yosuke and Sugiyama, Kazunari},
-	booktitle={2022 IEEE/WIC/ACM International Joint Conference on Web Intelligence and Intelligent Agent Technology (WI-IAT)},
-	title={Job Recommendation Based on Multi Behaviors and Explicit Preferences},
-	year={2020}
+@INPROCEEDINGS{10101899,
+  author={Saito, Yosuke and Sugiyama, Kazunari},
+  booktitle={2022 IEEE/WIC/ACM International Joint Conference on Web Intelligence and Intelligent Agent Technology (WI-IAT)},
+  title={Job Recommendation Based on Multiple Behaviors and Explicit Preferences},
+  year={2022},
+  volume={},
+  number={},
+  pages={1-8},
+  doi={10.1109/WI-IAT55865.2022.00011}
 }
 ```
